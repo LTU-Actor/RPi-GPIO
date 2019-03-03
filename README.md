@@ -8,6 +8,9 @@
     <!-- value here is the pull-up -->
     <param name="pub/GPIO4" value="false" />
     <param name="pub/GPIO3" value="true" />
+
+    <!-- set pin 5 based on /gpio5 -->
+    <param name="sub/5" value="/gpio5" />
   </node>
 </launch>
 ```

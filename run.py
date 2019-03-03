@@ -11,10 +11,8 @@ from functools import partial
 # Kind of like a JS style object that you can just assign stuff to
 class StorageObject: pass
 
-def pub_pin_f(pub, data):
-    rospy.logerr("GOT: ")
-    rospy.logerr(data)
-    pub.publish(data)
+
+# CORE
 
 rospy.init_node('rpi_estop_loop')
 hostpi = rospy.get_param('~host', None)
@@ -23,6 +21,14 @@ bounce_time = rospy.get_param('~bounce_time', 0.01)
 factory = None
 if hostpi is not None:
     factory = PiGPIOFactory(host=hostpi)
+
+
+# PIN PUBLISHING
+
+def pub_pin_f(pub, data):
+    rospy.logerr("GOT: ")
+    rospy.logerr(data)
+    pub.publish(data)
 
 pub_pins = {}
 pub_pins_params = rospy.get_param('~pub')
@@ -33,5 +39,22 @@ for pin, pull_up in pub_pins_params.iteritems():
     o.button.when_pressed = partial(pub_pin_f, o.pub, True)
     o.button.when_released = partial(pub_pin_f, o.pub, False)
     pub_pins[pin] = o
+
+
+# PIN SUBSCRIBING
+
+def sub_pin_f(led, data):
+    if data.data:
+        led.on()
+    else:
+        led.off()
+
+sub_pins = {}
+sub_pins_params = rospy.get_param('~sub')
+for pin, topic in sub_pins_params.iteritems():
+    o = StorageObject()
+    o.led = LED(pin, pin_factory=factory)
+    o.sub = rospy.Subscriber(topic, Bool, partial(sub_pin_f, o.led))
+    sub_pins[pin] = o
 
 pause()
