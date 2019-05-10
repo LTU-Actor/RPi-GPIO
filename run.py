@@ -31,14 +31,15 @@ def pub_pin_f(pub, data):
     pub.publish(data)
 
 pub_pins = {}
-pub_pins_params = rospy.get_param('~pub')
-for pin, pull_up in pub_pins_params.iteritems():
-    o = StorageObject()
-    o.button = Button(pin, pin_factory=factory, pull_up=bool(pull_up), bounce_time=bounce_time)
-    o.pub = rospy.Publisher('~pub/' + pin, Bool, queue_size=10)
-    o.button.when_pressed = partial(pub_pin_f, o.pub, True)
-    o.button.when_released = partial(pub_pin_f, o.pub, False)
-    pub_pins[pin] = o
+pub_pins_params = rospy.get_param('~pub', None)
+if pub_pins_params is not None:
+    for pin, pull_up in pub_pins_params.iteritems():
+        o = StorageObject()
+        o.button = Button(pin, pin_factory=factory, pull_up=bool(pull_up), bounce_time=bounce_time)
+        o.pub = rospy.Publisher('~pub/' + pin, Bool, queue_size=10)
+        o.button.when_pressed = partial(pub_pin_f, o.pub, True)
+        o.button.when_released = partial(pub_pin_f, o.pub, False)
+        pub_pins[pin] = o
 
 
 # PIN SUBSCRIBING
@@ -50,11 +51,12 @@ def sub_pin_f(led, data):
         led.off()
 
 sub_pins = {}
-sub_pins_params = rospy.get_param('~sub')
-for pin, topic in sub_pins_params.iteritems():
-    o = StorageObject()
-    o.led = LED(pin, pin_factory=factory)
-    o.sub = rospy.Subscriber(topic, Bool, partial(sub_pin_f, o.led))
-    sub_pins[pin] = o
+sub_pins_params = rospy.get_param('~sub', None)
+if sub_pins_params is not None:
+    for pin, topic in sub_pins_params.iteritems():
+        o = StorageObject()
+        o.led = LED(pin, pin_factory=factory)
+        o.sub = rospy.Subscriber(topic, Bool, partial(sub_pin_f, o.led))
+        sub_pins[pin] = o
 
 pause()
