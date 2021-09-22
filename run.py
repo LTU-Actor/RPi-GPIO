@@ -1,6 +1,10 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import rospy
+
+import os
+os.environ['GPIOZERO_PIN_FACTORY'] = os.environ.get('GPIOZERO_PIN_FACTORY', 'mock')
+
 from gpiozero import Button, LED
 from gpiozero.pins.pigpio import PiGPIOFactory
 from std_srvs.srv import Empty
@@ -33,7 +37,7 @@ def pub_pin_f(pub, data):
 pub_pins = {}
 pub_pins_params = rospy.get_param('~pub', None)
 if pub_pins_params is not None:
-    for pin, pull_up in pub_pins_params.iteritems():
+    for pin, pull_up in pub_pins_params.items():
         o = StorageObject()
         o.button = Button(pin, pin_factory=factory, pull_up=bool(pull_up), bounce_time=bounce_time)
         o.pub = rospy.Publisher('~pub/' + pin, Bool, queue_size=10)
@@ -53,9 +57,9 @@ def sub_pin_f(led, data):
 sub_pins = {}
 sub_pins_params = rospy.get_param('~sub', None)
 if sub_pins_params is not None:
-    for pin, topic in sub_pins_params.iteritems():
+    for pin, topic in sub_pins_params.items():
         o = StorageObject()
-        o.led = LED(pin, pin_factory=factory)
+        o.led = LED(int(pin), pin_factory=factory)
         o.sub = rospy.Subscriber(topic, Bool, partial(sub_pin_f, o.led))
         sub_pins[pin] = o
 
